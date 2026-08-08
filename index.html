@@ -52,7 +52,7 @@
       border: 2px solid rgba(244, 63, 94, 0.8);
       border-radius: 28px;
       padding: 28px 20px;
-      max-width: 540px;
+      max-width: 500px;
       width: 100%;
       text-align: center;
       box-shadow: 0 0 50px rgba(225, 29, 72, 0.4), inset 0 0 15px rgba(244, 63, 94, 0.2);
@@ -125,16 +125,16 @@
     .input-group { 
       display: flex; 
       justify-content: center; 
-      gap: 6px; 
+      gap: 12px; 
       margin-bottom: 18px; 
     }
 
     .input-group input {
-      width: 38px; 
-      height: 50px; 
-      font-size: 1.4rem; 
+      width: 50px; 
+      height: 60px; 
+      font-size: 1.8rem; 
       text-align: center;
-      border-radius: 12px; 
+      border-radius: 14px; 
       border: 2px solid rgba(255, 0, 85, 0.8); 
       background: rgba(20, 5, 15, 0.9);
       color: #ff0055; 
@@ -196,7 +196,7 @@
 
     .badge-signal {
       background: rgba(255, 0, 85, 0.15);
-      color: #ffeaa7; padding: 3px 8px; border-radius: 8px; font-weight: bold; font-size: 0.75rem;
+      color: #ffeaa7; padding: 4px 10px; border-radius: 8px; font-weight: bold; font-size: 0.8rem;
       border: 1px solid rgba(255, 0, 85, 0.4);
     }
 
@@ -242,10 +242,10 @@
     
     <div class="desc-box">
       ✨ <strong>關卡規則：</strong><br>
-      請解譯 <strong>7 位數字（0~9，可重複）</strong>。<br>
+      請解譯 <strong>4 位數字（0~9，可重複）</strong>。<br>
       🌫️ <strong>三重迷霧：</strong>每次比對給出 <strong>3 組訊號（1 真實、2 智慧偽謊言）</strong>。<br>
-      🌀 <strong>動態跳躍：</strong>每累積 <strong>5 次嘗試</strong>，目標密碼的每個位數會強制進行 <strong>+1 跳躍</strong>。<br>
-      🔒 <strong>絕對一致原則：</strong>相同的輸入永遠固定對應同一組 3 訊號與謊言組合！
+      🌀 <strong>動態跳躍：</strong>每累積 <strong>10 次嘗試</strong>，目標密碼的每個位數會強制進行 <strong>+1 跳躍</strong>。<br>
+      🔒 <strong>絕對一致原則：</strong>同階段內相同的輸入永遠固定對應同一組 3 訊號組合！
     </div>
 
     <div class="status-bar">
@@ -258,7 +258,7 @@
     <button class="btn" onclick="checkCode()">破譯密碼 🚀</button>
 
     <div class="history" id="history">
-      <div style="text-align:center; color:#a1a1aa; font-size:0.85rem;">請輸入 7 位數開始破解 Level 7！</div>
+      <div style="text-align:center; color:#a1a1aa; font-size:0.85rem;">請輸入 4 位數開始破解 Level 7！</div>
     </div>
   </div>
 
@@ -273,12 +273,15 @@
   </div>
 
   <script>
+    const CODE_LENGTH = 4;
+    const SHIFT_INTERVAL = 10;
+
     let attemptsCount = 0;
     let startTime = Date.now();
     let timerInterval = null;
 
     let currentTarget = [];
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < CODE_LENGTH; i++) {
       currentTarget.push(Math.floor(Math.random() * 10));
     }
 
@@ -297,7 +300,7 @@
     function renderInputs() {
       const group = document.getElementById('inputGroup');
       group.innerHTML = '';
-      for (let i = 0; i < 7; i++) {
+      for (let i = 0; i < CODE_LENGTH; i++) {
         const input = document.createElement('input');
         input.type = 'tel';
         input.maxLength = 1;
@@ -330,19 +333,19 @@
 
     function calculateAB(guessArr, targetArr) {
       let a = 0, b = 0;
-      const targetUsed = new Array(7).fill(false);
-      const guessUsed = new Array(7).fill(false);
+      const targetUsed = new Array(CODE_LENGTH).fill(false);
+      const guessUsed = new Array(CODE_LENGTH).fill(false);
 
-      for (let i = 0; i < 7; i++) {
+      for (let i = 0; i < CODE_LENGTH; i++) {
         if (guessArr[i] === targetArr[i]) {
           a++;
           targetUsed[i] = true;
           guessUsed[i] = true;
         }
       }
-      for (let i = 0; i < 7; i++) {
+      for (let i = 0; i < CODE_LENGTH; i++) {
         if (!guessUsed[i]) {
-          for (let j = 0; j < 7; j++) {
+          for (let j = 0; j < CODE_LENGTH; j++) {
             if (!targetUsed[j] && guessArr[i] === targetArr[j]) {
               b++;
               targetUsed[j] = true;
@@ -361,7 +364,7 @@
 
       for (let retry = 0; retry < 50; retry++) {
         fakeTarget = [];
-        for (let i = 0; i < 7; i++) fakeTarget.push(Math.floor(Math.random() * 10));
+        for (let i = 0; i < CODE_LENGTH; i++) fakeTarget.push(Math.floor(Math.random() * 10));
         
         fakeResult = calculateAB(guessArr, fakeTarget);
 
@@ -375,8 +378,8 @@
       }
 
       if (!valid) {
-        fakeResult.a = (trueResult.a + (avoidResults.length + 2)) % 7;
-        fakeResult.b = (trueResult.b + 1) % 7;
+        fakeResult.a = (trueResult.a + avoidResults.length + 1) % (CODE_LENGTH + 1);
+        fakeResult.b = Math.min(CODE_LENGTH - fakeResult.a, (trueResult.b + 1) % (CODE_LENGTH + 1));
       }
 
       return fakeResult;
@@ -394,8 +397,9 @@
       let guessStr = '';
       inputs.forEach(input => guessStr += input.value);
 
-      if (guessStr.length !== 7 || !/^\d{7}$/.test(guessStr)) {
-        alert('請輸入完整的 7 位數字！');
+      const pattern = new RegExp(`^\\d{${CODE_LENGTH}}$`);
+      if (guessStr.length !== CODE_LENGTH || !pattern.test(guessStr)) {
+        alert(`請輸入完整的 ${CODE_LENGTH} 位數字！`);
         return;
       }
 
@@ -403,11 +407,14 @@
       attemptsCount++;
       document.getElementById('attemptCountDisplay').innerText = attemptsCount;
 
+      const currentCycle = Math.floor((attemptsCount - 1) / SHIFT_INTERVAL) + 1;
       const realResult = calculateAB(guessArr, currentTarget);
 
+      const cacheKey = `c${currentCycle}_${guessStr}`;
+
       let signals;
-      if (signalCache[guessStr]) {
-        signals = signalCache[guessStr];
+      if (signalCache[cacheKey]) {
+        signals = signalCache[cacheKey];
       } else {
         const lie1 = generateSmartLie(guessArr, realResult, []);
         const lie2 = generateSmartLie(guessArr, realResult, [lie1]);
@@ -419,11 +426,10 @@
         ];
 
         signals.sort(() => Math.random() - 0.5);
-        signalCache[guessStr] = signals;
+        signalCache[cacheKey] = signals;
       }
 
-      const currentCycle = Math.floor((attemptsCount - 1) / 5) + 1;
-      const willShift = (attemptsCount % 5 === 0);
+      const willShift = (attemptsCount % SHIFT_INTERVAL === 0);
 
       historyData.unshift({ 
         guess: guessStr, 
@@ -434,7 +440,7 @@
 
       renderHistory();
 
-      if (realResult.a === 7) {
+      if (realResult.a === CODE_LENGTH) {
         clearInterval(timerInterval);
         const totalSeconds = Math.floor((Date.now() - startTime) / 1000);
         const finalMins = Math.floor(totalSeconds / 60);
@@ -443,7 +449,7 @@
         let timeString = (finalMins > 0) ? `${finalMins} 分 ${finalSecs} 秒` : `${finalSecs} 秒`;
 
         document.getElementById('secretCodeDisplay').innerText = guessStr;
-        document.getElementById('modalDesc').innerText = `太強了！你成功看穿了 Level 7 的動態三重迷霧與每 5 次的密碼跳躍，共花費 ${attemptsCount} 次嘗試，耗時 ${timeString}！`;
+        document.getElementById('modalDesc').innerText = `太強了！你成功破譯了 Level 7 的動態三重迷霧，共花費 ${attemptsCount} 次嘗試，耗時 ${timeString}！`;
         
         setTimeout(() => {
           document.getElementById('rewardOverlay').style.display = 'flex';
@@ -467,7 +473,7 @@
         html += `
           <div class="history-item">
             <strong>第 ${displayIndex} 次 [階段 ${item.cycle}]：</strong> 
-            <span style="color:#ff7597; font-weight:bold;">${item.guess}</span>
+            <span style="color:#ff7597; font-weight:bold; font-size:1rem;">${item.guess}</span>
             <div class="signal-container">
               <span class="badge-signal">訊號 A：${item.signals[0].a}A ${item.signals[0].b}B</span>
               <span class="badge-signal" style="color:#ff7675;">訊號 B：${item.signals[1].a}A ${item.signals[1].b}B</span>
