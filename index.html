@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>😈 Number Devil - Level 7: 5位動態三重迷霧</title>
+  <title>😈 Number Devil - Level 7: 5位全體同步動態迷霧</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -236,17 +236,18 @@
 <body>
 
   <div class="game-card" id="gameCard">
-    <div class="level-tag">😈 NUMBER DEVIL - LEVEL 7 (HARD)</div>
+    <div class="level-tag">😈 NUMBER DEVIL - LEVEL 7</div>
 
-    <h1>極限動態三重迷霧</h1>
+    <h1>全體同步動態迷霧</h1>
     
     <div class="desc-box">
-      🔥 <strong>魔王級規格：</strong><br>
-      請解譯 <strong>5 位數字（0~9，可重複）</strong>。<br>
-      🌫️ <strong>三重迷霧：</strong>每次比對給出 <strong>3 組訊號（1 真實、2 智慧偽謊言）</strong>。<br>
-      ⚠️ <strong>真相定律：</strong>謊言絕不會給出 <strong>0A0B</strong>！若看到 0A0B 必定為真實線索。<br>
-      🌀 <strong>5次急速跳躍：</strong>每 <strong>5 次嘗試</strong>，密碼將強制進行跳躍！（奇數位置 +1，偶數位置 +2）。<br>
-      🔒 <strong>絕對一致原則：</strong>同階段內相同的輸入永遠固定對應同一組 3 訊號組合！
+      🔥 <strong>遊戲規則：</strong><br>
+      請猜出 <strong>5 位數字（0 到 9，數字可重複）</strong>。<br>
+      🌫️ <strong>三重迷霧：</strong>每次輸入會給出 <strong>3 組訊號（1個真的、2個假的）</strong>。<br>
+      ⚠️ <strong>真相線索：</strong>假的訊號絕不會出現 <strong>0A0B</strong>！如果看到 0A0B，那它絕對是真的。<br>
+      🌀 <strong>全體跳躍機制：</strong>每累積滿 <strong>5 次嘗試</strong>，密碼的 5 個數字會全體一起變動：<br>
+      &nbsp;&nbsp;• 第 5、15、25... 次後：全體數字 +1（9 加 1 會變回 0）<br>
+      &nbsp;&nbsp;• 第 10、20、30... 次後：全體數字 +2（9 加 2 會變回 1）
     </div>
 
     <div class="status-bar">
@@ -259,7 +260,7 @@
     <button class="btn" onclick="checkCode()">破譯密碼 🚀</button>
 
     <div class="history" id="history">
-      <div style="text-align:center; color:#a1a1aa; font-size:0.85rem;">請輸入 5 位數挑戰魔王 Level 7！</div>
+      <div style="text-align:center; color:#a1a1aa; font-size:0.85rem;">請輸入 5 位數開始挑戰！</div>
     </div>
   </div>
 
@@ -275,7 +276,7 @@
 
   <script>
     const CODE_LENGTH = 5;
-    const SHIFT_INTERVAL = 5; // 每 5 次嘗試即進行跳躍
+    const SHIFT_INTERVAL = 5;
 
     let attemptsCount = 0;
     let startTime = Date.now();
@@ -358,7 +359,6 @@
       return { a, b };
     }
 
-    // 謊言不允許產生 0A0B，(A+B) 必須大於 0
     function generateSmartLie(guessArr, trueResult, avoidResults = []) {
       let fakeTarget = [];
       let fakeResult = { a: 0, b: 0 };
@@ -388,15 +388,14 @@
       return fakeResult;
     }
 
-    // 複合跳躍：奇數位置(索引0,2,4) +1，偶數位置(索引1,3) +2
-    function shiftTarget() {
-      currentTarget = currentTarget.map((num, idx) => {
-        const addVal = (idx % 2 === 0) ? 1 : 2;
-        return (num + addVal) % 10;
-      });
+    function shiftTarget(shiftCount) {
+      const addVal = (shiftCount % 2 !== 0) ? 1 : 2;
+      currentTarget = currentTarget.map(num => (num + addVal) % 10);
+      
       const card = document.getElementById('gameCard');
       card.classList.add('shake');
       setTimeout(() => card.classList.remove('shake'), 500);
+      return addVal;
     }
 
     function checkCode() {
@@ -437,12 +436,19 @@
       }
 
       const willShift = (attemptsCount % SHIFT_INTERVAL === 0);
+      let shiftedAddVal = 0;
+
+      if (willShift) {
+        const shiftTimes = attemptsCount / SHIFT_INTERVAL;
+        shiftedAddVal = shiftTarget(shiftTimes);
+      }
 
       historyData.unshift({ 
         guess: guessStr, 
         signals: signals,
         cycle: currentCycle,
-        shiftedNotice: willShift
+        shiftedNotice: willShift,
+        shiftVal: shiftedAddVal
       });
 
       renderHistory();
@@ -456,16 +462,12 @@
         let timeString = (finalMins > 0) ? `${finalMins} 分 ${finalSecs} 秒` : `${finalSecs} 秒`;
 
         document.getElementById('secretCodeDisplay').innerText = guessStr;
-        document.getElementById('modalDesc').innerText = `太神了！你成功破譯了 Level 7 的 5位動態三重迷霧，共花費 ${attemptsCount} 次嘗試，耗時 ${timeString}！`;
+        document.getElementById('modalDesc').innerText = `太神了！你成功破譯了 Level 7，共花費 ${attemptsCount} 次嘗試，耗時 ${timeString}！`;
         
         setTimeout(() => {
           document.getElementById('rewardOverlay').style.display = 'flex';
         }, 300);
         return;
-      }
-
-      if (willShift) {
-        shiftTarget();
       }
 
       inputs.forEach(input => input.value = '');
@@ -485,7 +487,7 @@
               <span class="badge-signal">訊號 A：${item.signals[0].a}A ${item.signals[0].b}B</span>
               <span class="badge-signal" style="color:#ff7675;">訊號 B：${item.signals[1].a}A ${item.signals[1].b}B</span>
               <span class="badge-signal" style="color:#fd79a8;">訊號 C：${item.signals[2].a}A ${item.signals[2].b}B</span>
-              ${item.shiftedNotice ? '<span class="badge-signal" style="color:#ff0055; border-color:#ff0055;">🌀 5次跳躍（奇+1/偶+2）！</span>' : ''}
+              ${item.shiftedNotice ? `<span class="badge-signal" style="color:#ff0055; border-color:#ff0055;">🌀 5次跳躍！全體加${item.shiftVal}</span>` : ''}
             </div>
           </div>
         `;
