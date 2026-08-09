@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>😈 Number Devil - Level 7: 動態三重迷霧</title>
+  <title>😈 Number Devil - Level 7: 5位動態三重迷霧</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -52,7 +52,7 @@
       border: 2px solid rgba(244, 63, 94, 0.8);
       border-radius: 28px;
       padding: 28px 20px;
-      max-width: 500px;
+      max-width: 520px;
       width: 100%;
       text-align: center;
       box-shadow: 0 0 50px rgba(225, 29, 72, 0.4), inset 0 0 15px rgba(244, 63, 94, 0.2);
@@ -125,16 +125,16 @@
     .input-group { 
       display: flex; 
       justify-content: center; 
-      gap: 12px; 
+      gap: 8px; 
       margin-bottom: 18px; 
     }
 
     .input-group input {
-      width: 50px; 
-      height: 60px; 
-      font-size: 1.8rem; 
+      width: 45px; 
+      height: 55px; 
+      font-size: 1.6rem; 
       text-align: center;
-      border-radius: 14px; 
+      border-radius: 12px; 
       border: 2px solid rgba(255, 0, 85, 0.8); 
       background: rgba(20, 5, 15, 0.9);
       color: #ff0055; 
@@ -236,16 +236,16 @@
 <body>
 
   <div class="game-card" id="gameCard">
-    <div class="level-tag">😈 NUMBER DEVIL - LEVEL 7</div>
+    <div class="level-tag">😈 NUMBER DEVIL - LEVEL 7 (HARD)</div>
 
-    <h1>動態三重迷霧</h1>
+    <h1>極限動態三重迷霧</h1>
     
     <div class="desc-box">
-      ✨ <strong>關卡規則：</strong><br>
-      請解譯 <strong>4 位數字（0~9，可重複）</strong>。<br>
+      🔥 <strong>魔王級規格：</strong><br>
+      請解譯 <strong>5 位數字（0~9，可重複）</strong>。<br>
       🌫️ <strong>三重迷霧：</strong>每次比對給出 <strong>3 組訊號（1 真實、2 智慧偽謊言）</strong>。<br>
       ⚠️ <strong>真相定律：</strong>謊言絕不會給出 <strong>0A0B</strong>！若看到 0A0B 必定為真實線索。<br>
-      🌀 <strong>動態跳躍：</strong>每累積 <strong>8 次嘗試</strong>，目標密碼的每個位數會強制進行 <strong>+1 跳躍</strong>。<br>
+      🌀 <strong>5次急速跳躍：</strong>每 <strong>5 次嘗試</strong>，密碼將強制進行跳躍！（奇數位置 +1，偶數位置 +2）。<br>
       🔒 <strong>絕對一致原則：</strong>同階段內相同的輸入永遠固定對應同一組 3 訊號組合！
     </div>
 
@@ -259,7 +259,7 @@
     <button class="btn" onclick="checkCode()">破譯密碼 🚀</button>
 
     <div class="history" id="history">
-      <div style="text-align:center; color:#a1a1aa; font-size:0.85rem;">請輸入 4 位數開始破解 Level 7！</div>
+      <div style="text-align:center; color:#a1a1aa; font-size:0.85rem;">請輸入 5 位數挑戰魔王 Level 7！</div>
     </div>
   </div>
 
@@ -274,8 +274,8 @@
   </div>
 
   <script>
-    const CODE_LENGTH = 4;
-    const SHIFT_INTERVAL = 8; // 每 8 次嘗試即進行動態跳躍 +1
+    const CODE_LENGTH = 5;
+    const SHIFT_INTERVAL = 5; // 每 5 次嘗試即進行跳躍
 
     let attemptsCount = 0;
     let startTime = Date.now();
@@ -388,8 +388,12 @@
       return fakeResult;
     }
 
+    // 複合跳躍：奇數位置(索引0,2,4) +1，偶數位置(索引1,3) +2
     function shiftTarget() {
-      currentTarget = currentTarget.map(num => (num + 1) % 10);
+      currentTarget = currentTarget.map((num, idx) => {
+        const addVal = (idx % 2 === 0) ? 1 : 2;
+        return (num + addVal) % 10;
+      });
       const card = document.getElementById('gameCard');
       card.classList.add('shake');
       setTimeout(() => card.classList.remove('shake'), 500);
@@ -452,7 +456,7 @@
         let timeString = (finalMins > 0) ? `${finalMins} 分 ${finalSecs} 秒` : `${finalSecs} 秒`;
 
         document.getElementById('secretCodeDisplay').innerText = guessStr;
-        document.getElementById('modalDesc').innerText = `太強了！你成功破譯了 Level 7 的動態三重迷霧，共花費 ${attemptsCount} 次嘗試，耗時 ${timeString}！`;
+        document.getElementById('modalDesc').innerText = `太神了！你成功破譯了 Level 7 的 5位動態三重迷霧，共花費 ${attemptsCount} 次嘗試，耗時 ${timeString}！`;
         
         setTimeout(() => {
           document.getElementById('rewardOverlay').style.display = 'flex';
@@ -481,7 +485,7 @@
               <span class="badge-signal">訊號 A：${item.signals[0].a}A ${item.signals[0].b}B</span>
               <span class="badge-signal" style="color:#ff7675;">訊號 B：${item.signals[1].a}A ${item.signals[1].b}B</span>
               <span class="badge-signal" style="color:#fd79a8;">訊號 C：${item.signals[2].a}A ${item.signals[2].b}B</span>
-              ${item.shiftedNotice ? '<span class="badge-signal" style="color:#ff0055; border-color:#ff0055;">🌀 跳躍 +1！</span>' : ''}
+              ${item.shiftedNotice ? '<span class="badge-signal" style="color:#ff0055; border-color:#ff0055;">🌀 5次跳躍（奇+1/偶+2）！</span>' : ''}
             </div>
           </div>
         `;
