@@ -244,7 +244,8 @@
       ✨ <strong>關卡規則：</strong><br>
       請解譯 <strong>4 位數字（0~9，可重複）</strong>。<br>
       🌫️ <strong>三重迷霧：</strong>每次比對給出 <strong>3 組訊號（1 真實、2 智慧偽謊言）</strong>。<br>
-      🌀 <strong>動態跳躍：</strong>每累積 <strong>10 次嘗試</strong>，目標密碼的每個位數會強制進行 <strong>+1 跳躍</strong>。<br>
+      ⚠️ <strong>真相定律：</strong>謊言絕不會給出 <strong>0A0B</strong>！若看到 0A0B 必定為真實線索。<br>
+      🌀 <strong>動態跳躍：</strong>每累積 <strong>8 次嘗試</strong>，目標密碼的每個位數會強制進行 <strong>+1 跳躍</strong>。<br>
       🔒 <strong>絕對一致原則：</strong>同階段內相同的輸入永遠固定對應同一組 3 訊號組合！
     </div>
 
@@ -274,7 +275,7 @@
 
   <script>
     const CODE_LENGTH = 4;
-    const SHIFT_INTERVAL = 10;
+    const SHIFT_INTERVAL = 8; // 每 8 次嘗試即進行動態跳躍 +1
 
     let attemptsCount = 0;
     let startTime = Date.now();
@@ -357,29 +358,31 @@
       return { a, b };
     }
 
+    // 謊言不允許產生 0A0B，(A+B) 必須大於 0
     function generateSmartLie(guessArr, trueResult, avoidResults = []) {
       let fakeTarget = [];
       let fakeResult = { a: 0, b: 0 };
       let valid = false;
 
-      for (let retry = 0; retry < 50; retry++) {
+      for (let retry = 0; retry < 100; retry++) {
         fakeTarget = [];
         for (let i = 0; i < CODE_LENGTH; i++) fakeTarget.push(Math.floor(Math.random() * 10));
         
         fakeResult = calculateAB(guessArr, fakeTarget);
+        const fakeSum = fakeResult.a + fakeResult.b;
 
         const isSameAsTrue = (fakeResult.a === trueResult.a && fakeResult.b === trueResult.b);
         const isDuplicate = avoidResults.some(r => r.a === fakeResult.a && r.b === fakeResult.b);
 
-        if (!isSameAsTrue && !isDuplicate) {
+        if (fakeSum > 0 && !isSameAsTrue && !isDuplicate) {
           valid = true;
           break;
         }
       }
 
       if (!valid) {
-        fakeResult.a = (trueResult.a + avoidResults.length + 1) % (CODE_LENGTH + 1);
-        fakeResult.b = Math.min(CODE_LENGTH - fakeResult.a, (trueResult.b + 1) % (CODE_LENGTH + 1));
+        fakeResult.a = Math.min(CODE_LENGTH, Math.max(1, trueResult.a + avoidResults.length + 1));
+        fakeResult.b = Math.max(0, CODE_LENGTH - fakeResult.a);
       }
 
       return fakeResult;
